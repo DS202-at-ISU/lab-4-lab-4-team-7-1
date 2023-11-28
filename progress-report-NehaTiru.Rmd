@@ -35,7 +35,7 @@ head(hall_of_fame_2023)
 names(hall_of_fame_2023) <- as.character(hall_of_fame_2023[1,])
 hall_of_fame_2023 <- hall_of_fame_2023[-1, ]
 data(HallOfFame, package = 'Lahman')
-HallOfFame
+# HallOfFame
 hall_of_fame_2023
 
 
