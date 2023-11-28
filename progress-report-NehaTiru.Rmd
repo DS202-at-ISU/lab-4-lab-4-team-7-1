@@ -1,5 +1,5 @@
 ---
-title: "progress-report-hedgreneric"
+title: "progress-report-NehaTiru"
 author: "Neha Tirunagiri"
 date: "2023-11-16"
 output: html_document
@@ -8,3 +8,87 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+```{r}
+# Load necessary libraries for the analysis.
+library(tidyverse)
+library(rvest)
+# Uncomment below to install the Lahman package if not installed.
+# install.packages("Lahman")
+library(Lahman)
+# Verify the HallOfFame dataset.
+head(HallOfFame)
+```
+
+```{r}
+#Scrape Data
+url <- "https://www.baseball-reference.com/awards/hof_2023.shtml"
+html <- read_html(url)
+tables <- html_table(html, fill = TRUE)
+hall_of_fame_2023 <- tables[[1]]
+head(hall_of_fame_2023)
+
+```
+```{r}
+
+#Fix first row being the column names.
+names(hall_of_fame_2023) <- as.character(hall_of_fame_2023[1,])
+hall_of_fame_2023 <- hall_of_fame_2023[-1, ]
+data(HallOfFame, package = 'Lahman')
+HallOfFame
+hall_of_fame_2023
+
+
+
+```
+
+```{r}
+
+#Turn hall of fame 2023 into the same format as HallOfFame.
+needed_votes <- 292
+
+hall_of_fame_2023_transformed <- data.frame(
+  playerID = hall_of_fame_2023$Name,
+  yearID = 2023,
+  votedBy = "BBWAA",
+  ballots = 389,
+  needed = needed_votes,
+  votes = as.integer(hall_of_fame_2023$`Votes`),
+  inducted = ifelse(
+    as.integer(hall_of_fame_2023$Votes) >= needed_votes, "Y", "N"
+  ),
+  category = "Player",
+  needed_note = NA
+)
+
+hall_of_fame_2023_transformed <- hall_of_fame_2023_transformed %>%
+  mutate(
+    playerID = gsub("X-", "", playerID)
+  )
+hall_of_fame_2023_transformed
+```
+```{r}
+
+# Fix column mismatches
+hall_of_fame_2023_transformed$inducted <- factor(hall_of_fame_2023_transformed$inducted,levels = levels(HallOfFame$inducted))
+
+# Combine
+combinedhalloffame <- rbind(HallOfFame, hall_of_fame_2023_transformed)
+
+# Verify
+nrow(HallOfFame)
+nrow(hall_of_fame_2023_transformed)
+nrow(combinedhalloffame )
+
+# Export
+write_csv(combinedhalloffame , file="combinedhalloffame.csv")
+
+
+```
+```{r}
+HallOfFame %>% 
+  ggplot(aes(x = yearID, fill = inducted)) +
+  geom_bar() +
+  xlim(c(1936, 2023))
+```
+
